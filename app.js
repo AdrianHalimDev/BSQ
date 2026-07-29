@@ -58,10 +58,13 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateTimeGreeting, 60000);
 });
 
-// Set default date to Today
+// Set default date to Today (Local Timezone)
 function initDefaultDate() {
-    const today = new Date().toISOString().split('T')[0];
-    txDate.value = today;
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    txDate.value = `${y}-${m}-${d}`;
 }
 
 // ============================================
