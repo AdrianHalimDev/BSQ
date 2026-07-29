@@ -31,7 +31,7 @@ function doPost(e) {
       var prevNo = sheet.getRange(lastRow, 2).getValue();
       
       // Jika baris terakhir kosong (akibat skip row sebelumnya), cek 1 baris di atasnya
-      if ((!prevDateVal || prevDateVal === "") && lastRow > 3) {
+      if ((!prevDateVal || String(prevDateVal).trim() === "") && lastRow > 3) {
         lastRow = lastRow - 1;
         prevDateVal = sheet.getRange(lastRow, 1).getValue();
         prevNo = sheet.getRange(lastRow, 2).getValue();
@@ -43,12 +43,14 @@ function doPost(e) {
         var d = ("0" + prevDateVal.getDate()).slice(-2);
         var m = ("0" + (prevDateVal.getMonth() + 1)).slice(-2);
         var y = prevDateVal.getFullYear();
-        formattedPrevDate = d + "-" + m + "-" + y;
+        formattedPrevDate = d + "/" + m + "/" + y;
       } else {
-        formattedPrevDate = String(prevDateVal).trim();
+        // Ubah strip (-) menjadi slash (/) jika berupa teks
+        formattedPrevDate = String(prevDateVal).trim().replace(/-/g, "/");
       }
 
-      var currentDateInput = String(data.tanggal || "").trim();
+      // Format input dari app.js (DD-MM-YYYY) diubah ke DD/MM/YYYY
+      var currentDateInput = String(data.tanggal || "").trim().replace(/-/g, "/");
 
       // Cek apakah tanggal berbeda dengan transaksi sebelumnya
       if (formattedPrevDate && formattedPrevDate !== currentDateInput) {
@@ -61,7 +63,8 @@ function doPost(e) {
 
     // Jika ganti tanggal, tambahkan 1 baris kosong (skip one row) terlebih dahulu
     if (isNewDate) {
-      sheet.appendRow(["", "", "", "", "", "", "", "", "", "", "", "", ""]);
+      // Menggunakan spasi agar Google Sheets tidak menganggapnya baris kosong dan menimpanya
+      sheet.appendRow([" ", "", "", "", "", "", "", "", "", "", "", "", ""]);
     }
 
     // Format Nama Nasabah
@@ -83,7 +86,7 @@ function doPost(e) {
     // Kolom 13: PETUGAS BSQ
 
     var newRow = [
-      data.tanggal || "",          // Kolom A: TANGGAL
+      currentDateInput || "",      // Kolom A: TANGGAL
       noUrut,                      // Kolom B: NO
       namaLengkap,                 // Kolom C: NAMA NASABAH
       "'" + (data.cis || ""),      // Kolom D: CIS (diberi tanda petik agar tidak di-format scientific/number)
@@ -129,7 +132,7 @@ function doGet(e) {
       var prevDateVal = sheet.getRange(lastRow, 1).getValue();
       var prevNo = sheet.getRange(lastRow, 2).getValue();
 
-      if ((!prevDateVal || prevDateVal === "") && lastRow > 3) {
+      if ((!prevDateVal || String(prevDateVal).trim() === "") && lastRow > 3) {
         lastRow = lastRow - 1;
         prevDateVal = sheet.getRange(lastRow, 1).getValue();
         prevNo = sheet.getRange(lastRow, 2).getValue();
@@ -140,12 +143,12 @@ function doGet(e) {
         var d = ("0" + prevDateVal.getDate()).slice(-2);
         var m = ("0" + (prevDateVal.getMonth() + 1)).slice(-2);
         var y = prevDateVal.getFullYear();
-        formattedPrevDate = d + "-" + m + "-" + y;
+        formattedPrevDate = d + "/" + m + "/" + y;
       } else {
-        formattedPrevDate = String(prevDateVal).trim();
+        formattedPrevDate = String(prevDateVal).trim().replace(/-/g, "/");
       }
 
-      var currentDateInput = String(data.tanggal || "").trim();
+      var currentDateInput = String(data.tanggal || "").trim().replace(/-/g, "/");
 
       if (formattedPrevDate && formattedPrevDate !== currentDateInput) {
         isNewDate = true;
@@ -156,13 +159,13 @@ function doGet(e) {
     }
 
     if (isNewDate) {
-      sheet.appendRow(["", "", "", "", "", "", "", "", "", "", "", "", ""]);
+      sheet.appendRow([" ", "", "", "", "", "", "", "", "", "", "", "", ""]);
     }
 
     var namaLengkap = data.nama || "";
 
     var newRow = [
-      data.tanggal || "",
+      currentDateInput || "",
       noUrut,
       namaLengkap,
       "'" + (data.cis || ""),
