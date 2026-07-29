@@ -1,0 +1,758 @@
+/* ============================================
+   BSQ Prasurvey PWA — Premium Design System
+   BCA KCP Jembatan Dua
+   ============================================ */
+
+:root {
+    /* Official BCA Brand Colors */
+    --bca-blue: #005BA9;
+    --bca-blue-500: #0066AE;
+    --bca-blue-400: #2FA6FC;
+    --bca-blue-300: #63ACF2;
+    --bca-blue-200: #AAD2F8;
+    --bca-blue-100: #F1F5F8;
+    --bca-dark-blue: #093967;
+    --bca-deeper: #031120;
+    --bca-secondary: #28B4E8;
+    --bca-orange: #FF944C;
+    --bca-accent: #2FA6FC;
+    --bca-glow: rgba(0, 91, 169, 0.15);
+
+    --wa-green: #25D366;
+    --wa-dark: #128C7E;
+    --wa-bubble: #dcf8c6;
+    --wa-bubble-border: #b4e2a0;
+
+    --sheets-green: #0f9d58;
+    --sheets-dark: #0b7a42;
+
+    --bg-color: var(--bca-blue-100);
+    --card-bg: #ffffff;
+    --text-primary: #303030;
+    --text-secondary: #7C7C7C;
+    --text-muted: #B0B0B0;
+    --border-color: #EFEFEF;
+    --border-focus: var(--bca-accent);
+
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 14px rgba(0,0,0,0.08);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+    --shadow-card-hover: 0 8px 25px rgba(0,92,170,0.1);
+
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-full: 9999px;
+
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.25s ease;
+    --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   Base & Reset
+   ============================================ */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding: 16px;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.app-container {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ============================================
+   Header — Premium Gradient with Glow
+   ============================================ */
+.app-header {
+    position: relative;
+    background: linear-gradient(135deg, var(--bca-deeper) 0%, var(--bca-dark-blue) 40%, var(--bca-blue) 100%);
+    color: #ffffff;
+    padding: 0;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg), 0 0 40px rgba(0, 92, 170, 0.15);
+    overflow: hidden;
+}
+
+.header-glow {
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(0,150,255,0.2) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 28px;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.bca-logo {
+    height: 46px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    transition: transform var(--transition-normal);
+}
+
+.bca-logo:hover {
+    transform: scale(1.05);
+}
+
+.app-header h1 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.app-header .subtitle {
+    font-size: 0.82rem;
+    opacity: 0.8;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+.time-badge {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 8px 18px;
+    border-radius: var(--radius-full);
+    font-size: 0.88rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(255,255,255,0.15);
+    transition: background var(--transition-normal);
+}
+
+.time-badge:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   Main Content Layout
+   ============================================ */
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 868px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    .header-content {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    .logo-area {
+        justify-content: center;
+    }
+}
+
+/* ============================================
+   Cards — Elevated with Hover Effect
+   ============================================ */
+.card {
+    background-color: var(--card-bg);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: box-shadow var(--transition-smooth), transform var(--transition-smooth);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-card-hover);
+}
+
+.card-header {
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.card-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--bca-dark-blue);
+    letter-spacing: -0.01em;
+}
+
+.card-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* ============================================
+   Form Styling
+   ============================================ */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="date"],
+select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none;
+    background-color: #fff;
+    color: var(--text-primary);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+select:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--bca-glow);
+}
+
+input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Toggle Radio Group (Bapak / Ibu) */
+.toggle-group {
+    display: flex;
+    gap: 0;
+    background: #f1f5f9;
+    border-radius: var(--radius-sm);
+    padding: 3px;
+    border: 1.5px solid var(--border-color);
+}
+
+.toggle-group input[type="radio"] {
+    display: none;
+}
+
+.toggle-btn {
+    flex: 1;
+    text-align: center;
+    padding: 9px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    color: var(--text-secondary);
+    user-select: none;
+}
+
+.toggle-group input[type="radio"]:checked + .toggle-btn {
+    background-color: var(--bca-blue);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,92,170,0.25);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 26px;
+}
+
+.btn {
+    padding: 11px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-family: inherit;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--bca-blue), var(--bca-accent));
+    color: #ffffff;
+    flex: 1;
+    box-shadow: 0 2px 8px rgba(0,92,170,0.2);
+}
+
+.btn-primary:hover:not(:disabled) {
+    box-shadow: 0 4px 16px rgba(0,92,170,0.35);
+    transform: translateY(-1px);
+}
+
+.btn-outline {
+    background-color: #fff;
+    color: var(--text-primary);
+    border: 1.5px solid var(--border-color);
+}
+
+.btn-outline:hover:not(:disabled) {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.btn-whatsapp {
+    background: linear-gradient(135deg, var(--wa-green), #20bd5a);
+    color: #ffffff;
+    width: 100%;
+    padding: 13px 20px;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 10px rgba(37,211,102,0.25);
+}
+
+.btn-whatsapp:hover:not(:disabled) {
+    box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+    transform: translateY(-1px);
+}
+
+.btn-sheets {
+    background: linear-gradient(135deg, var(--sheets-green), #0db060);
+    color: #ffffff;
+    flex: 1;
+    box-shadow: 0 2px 8px rgba(15,157,88,0.2);
+}
+
+.btn-sheets:hover:not(:disabled) {
+    box-shadow: 0 4px 16px rgba(15,157,88,0.35);
+    transform: translateY(-1px);
+}
+
+.btn-row {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-row .btn {
+    flex: 1;
+}
+
+.btn-sm {
+    padding: 6px 14px;
+    font-size: 0.78rem;
+}
+
+/* ============================================
+   Preview Section — WA Bubble Style
+   ============================================ */
+.preview-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-badge {
+    font-size: 0.72rem;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    background-color: #f1f5f9;
+    color: var(--text-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+}
+
+.status-badge.ready {
+    background-color: #dcfce7;
+    color: #15803d;
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+}
+
+.message-bubble {
+    position: relative;
+    background-color: var(--wa-bubble);
+    border: 1px solid var(--wa-bubble-border);
+    border-radius: 0 var(--radius-md) var(--radius-md) var(--radius-md);
+    padding: 16px 18px;
+    flex: 1;
+    min-height: 220px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.bubble-tail {
+    position: absolute;
+    top: 0;
+    left: -8px;
+    width: 0;
+    height: 0;
+    border-top: 0 solid transparent;
+    border-right: 8px solid var(--wa-bubble);
+    border-bottom: 12px solid transparent;
+}
+
+.message-bubble pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: inherit;
+    font-size: 0.88rem;
+    color: #1a1a1a;
+    line-height: 1.55;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ============================================
+   Float Settings Button
+   ============================================ */
+.float-config-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--bca-dark-blue), var(--bca-blue));
+    color: #fff;
+    border: none;
+    font-size: 1.3rem;
+    box-shadow: 0 4px 16px rgba(0,58,108,0.35);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: all var(--transition-normal);
+}
+
+.float-config-btn:hover {
+    transform: scale(1.1) rotate(30deg);
+    box-shadow: 0 6px 24px rgba(0,58,108,0.45);
+}
+
+/* ============================================
+   History Section
+   ============================================ */
+.history-card {
+    margin-top: 4px;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.history-header h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.table-responsive {
+    overflow-x: auto;
+    border-radius: var(--radius-sm);
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.history-table th,
+.history-table td {
+    padding: 11px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.history-table th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.history-table tbody tr {
+    transition: background-color var(--transition-fast);
+}
+
+.history-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+.badge-sent {
+    display: inline-block;
+    background-color: #dcfce7;
+    color: #15803d;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.badge-pending {
+    display: inline-block;
+    background-color: #fef9c3;
+    color: #a16207;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.badge-failed {
+    display: inline-block;
+    background-color: #fee2e2;
+    color: #dc2626;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+/* ============================================
+   Modal — Glassmorphism Style
+   ============================================ */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: #fff;
+    padding: 28px;
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 480px;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.modal-header h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    transition: color var(--transition-fast);
+}
+
+.modal-close:hover {
+    color: var(--text-primary);
+}
+
+.modal-content p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.sheets-status {
+    font-size: 0.82rem;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    margin-top: 10px;
+    display: none;
+}
+
+.sheets-status.success {
+    display: block;
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.sheets-status.error {
+    display: block;
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+/* ============================================
+   Toast Notification — Slide Up Animation
+   ============================================ */
+.toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: var(--text-primary);
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 400;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ============================================
+   Responsive Fine-tuning
+   ============================================ */
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .app-header {
+        border-radius: var(--radius-md);
+    }
+
+    .header-content {
+        padding: 18px 20px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .btn-row {
+        flex-direction: column;
+    }
+
+    .float-config-btn {
+        bottom: 16px;
+        right: 16px;
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+    }
+}
