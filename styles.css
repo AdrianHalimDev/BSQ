@@ -242,10 +242,10 @@ input[type="tel"],
 input[type="date"],
 select {
     width: 100%;
-    padding: 11px 14px;
+    padding: 12px 14px;
     border: 1.5px solid var(--border-color);
     border-radius: var(--radius-sm);
-    font-size: 0.9rem;
+    font-size: 16px; /* Must be 16px to prevent iOS Safari auto-zoom */
     font-family: inherit;
     outline: none;
     background-color: #fff;
@@ -751,8 +751,23 @@ input::placeholder {
     .float-config-btn {
         bottom: 16px;
         right: 16px;
-        width: 44px;
-        height: 44px;
+        width: 48px;
+        height: 48px;
         font-size: 1.1rem;
+    }
+
+    /* Memastikan teks tidak terpotong */
+    .app-header h1 {
+        font-size: 1.2rem;
+    }
+
+    .message-bubble {
+        padding: 12px;
+    }
+
+    .toast {
+        width: 90%;
+        text-align: center;
+        justify-content: center;
     }
 }
