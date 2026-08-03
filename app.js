@@ -1,11 +1,12 @@
 // ============================================
-// BSQ Prasurvey PWA — Application Logic v2
+// BSQ Prasurvey PWA — Application Logic v3
 // BCA KCP Jembatan Dua
 // ============================================
 
 // Storage Keys
 const STORAGE_KEY_SHEETS_URL = 'bsq_sheets_url';
 const STORAGE_KEY_HISTORY = 'bsq_tx_history';
+const STORAGE_KEY_HISTORY_DATE = 'bsq_tx_history_date';
 
 // DOM Elements
 const timeIcon = document.getElementById('timeIcon');
@@ -28,7 +29,6 @@ const messagePreview = document.getElementById('messagePreview');
 const statusBadge = document.getElementById('statusBadge');
 const btnSendWA = document.getElementById('btnSendWA');
 const btnCopy = document.getElementById('btnCopy');
-const btnSaveSheets = document.getElementById('btnSaveSheets');
 
 const settingsModal = document.getElementById('settingsModal');
 const sheetsUrlInput = document.getElementById('sheetsUrlInput');
@@ -40,12 +40,24 @@ const btnTestSheets = document.getElementById('btnTestSheets');
 
 const historyTableBody = document.getElementById('historyTableBody');
 const btnClearHistory = document.getElementById('btnClearHistory');
+const historyActions = document.getElementById('historyActions');
+const btnSaveAllToSheets = document.getElementById('btnSaveAllToSheets');
+
+const editModal = document.getElementById('editModal');
+const editForm = document.getElementById('editForm');
+const btnCloseEdit = document.getElementById('btnCloseEdit');
+const btnCancelEdit = document.getElementById('btnCancelEdit');
+
+const recapText = document.getElementById('recapText');
+const btnCopyRecap = document.getElementById('btnCopyRecap');
+
 const toast = document.getElementById('toast');
 const toastIcon = document.getElementById('toastIcon');
 const toastText = document.getElementById('toastText');
 
 let currentData = null;
 let currentMessage = '';
+let editingIndex = -1;
 
 // ============================================
 // Initialize Application
@@ -54,7 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initDefaultDate();
     updateTimeGreeting();
     loadSheetsUrl();
+    checkDailyReset();
     renderHistory();
+    generateDailyRecap();
     setInterval(updateTimeGreeting, 60000);
 });
 
@@ -65,6 +79,33 @@ function initDefaultDate() {
     const m = String(now.getMonth() + 1).padStart(2, '0');
     const d = String(now.getDate()).padStart(2, '0');
     txDate.value = `${y}-${m}-${d}`;
+}
+
+// ============================================
+// Get Today's Date String (YYYY-MM-DD)
+// ============================================
+function getTodayString() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+// ============================================
+// Daily Auto-Reset
+// ============================================
+function checkDailyReset() {
+    const today = getTodayString();
+    const savedDate = localStorage.getItem(STORAGE_KEY_HISTORY_DATE);
+
+    if (savedDate && savedDate !== today) {
+        // Different day — clear history
+        localStorage.removeItem(STORAGE_KEY_HISTORY);
+        localStorage.setItem(STORAGE_KEY_HISTORY_DATE, today);
+    } else if (!savedDate) {
+        localStorage.setItem(STORAGE_KEY_HISTORY_DATE, today);
+    }
 }
 
 // ============================================
@@ -110,6 +151,23 @@ txType.addEventListener('change', () => {
         customTxType.required = false;
     }
 });
+
+// ============================================
+// CIS Number — Prevent non-numeric input
+// ============================================
+cisNumber.addEventListener('keydown', (e) => {
+    // Allow: backspace, delete, tab, escape, enter, arrows
+    if ([8, 9, 27, 13, 46, 37, 38, 39, 40].includes(e.keyCode)) return;
+    // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+    if ((e.ctrlKey || e.metaKey) && [65, 67, 86, 88].includes(e.keyCode)) return;
+    // Block non-numeric
+    if ((e.keyCode < 48 || e.keyCode > 57) && (e.keyCode < 96 || e.keyCode > 105)) {
+        e.preventDefault();
+    }
+});
+
+// Prevent scroll from changing value
+cisNumber.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
 
 // ============================================
 // Form Submit — Generate Preview
@@ -169,7 +227,6 @@ Have a Great Day ${emoji_angel}${emoji_smile}`;
     // Enable action buttons
     btnSendWA.disabled = false;
     btnCopy.disabled = false;
-    btnSaveSheets.disabled = false;
 
     showToast('Preview pesan berhasil dibuat!', '✅');
 
@@ -195,7 +252,6 @@ btnReset.addEventListener('click', () => {
     // Disable action buttons
     btnSendWA.disabled = true;
     btnCopy.disabled = true;
-    btnSaveSheets.disabled = true;
 });
 
 // ============================================
@@ -210,7 +266,7 @@ function formatPhoneWhatsApp(phone) {
 }
 
 // ============================================
-// Send via WhatsApp
+// Send via WhatsApp — NO auto-save to Sheets
 // ============================================
 btnSendWA.addEventListener('click', () => {
     if (!currentData || !currentMessage) {
@@ -222,14 +278,13 @@ btnSendWA.addEventListener('click', () => {
     const encodedMessage = encodeURIComponent(currentMessage);
     const waUrl = `https://wa.me/${waPhone}?text=${encodedMessage}`;
 
-    // Auto save to history
+    // Save to local history as PENDING (NOT to Sheets)
     saveToHistory(currentData);
-
-    // Auto save to Google Sheets if URL configured
-    saveToGoogleSheets(currentData);
 
     // Open WhatsApp
     window.open(waUrl, '_blank');
+
+    showToast('Data masuk riwayat. Pastikan data benar sebelum simpan ke Sheet.', '📋');
 });
 
 // ============================================
@@ -255,17 +310,6 @@ btnCopy.addEventListener('click', () => {
 });
 
 // ============================================
-// Save to Google Sheets (Manual)
-// ============================================
-btnSaveSheets.addEventListener('click', () => {
-    if (!currentData) {
-        showToast('Silakan isi form terlebih dahulu!', '⚠️');
-        return;
-    }
-    saveToGoogleSheets(currentData, true);
-});
-
-// ============================================
 // LocalStorage & History Functions
 // ============================================
 function getHistory() {
@@ -280,20 +324,28 @@ function saveToHistory(item) {
     } else {
         history.unshift(item);
     }
+    // Save today's date
+    localStorage.setItem(STORAGE_KEY_HISTORY_DATE, getTodayString());
     localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(history));
     renderHistory();
+    generateDailyRecap();
 }
 
 function renderHistory() {
     const history = getHistory();
     if (history.length === 0) {
-        historyTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Belum ada data transaksi hari ini</td></tr>`;
+        historyTableBody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">Belum ada data transaksi hari ini</td></tr>`;
+        historyActions.style.display = 'none';
         return;
     }
 
+    // Check if there are any pending items
+    const hasPending = history.some(item => item.sheetsSynced === false);
+    historyActions.style.display = hasPending ? 'flex' : 'none';
+
     historyTableBody.innerHTML = history.map((item, index) => {
         let badgeClass = 'badge-pending';
-        let badgeText = 'Pending';
+        let badgeText = '⏳ Pending';
         if (item.sheetsSynced === true) {
             badgeClass = 'badge-sent';
             badgeText = '✅ Terkirim';
@@ -302,9 +354,12 @@ function renderHistory() {
             badgeText = '❌ Gagal';
         }
 
+        const isSynced = item.sheetsSynced === true;
+        const rowNumber = history.length - index;
+
         return `
-        <tr>
-            <td>${history.length - index}</td>
+        <tr class="${isSynced ? 'row-synced' : ''}">
+            <td>${rowNumber}</td>
             <td>${item.formattedDate || item.date}</td>
             <td>${item.name}</td>
             <td>${item.cis || '-'}</td>
@@ -312,75 +367,202 @@ function renderHistory() {
             <td>${item.phone}</td>
             <td>${item.teller}</td>
             <td><span class="${badgeClass}">${badgeText}</span></td>
+            <td class="action-cell">
+                ${!isSynced ? `
+                    <button class="btn-action btn-action-edit" onclick="openEditModal(${index})" title="Edit">✏️</button>
+                    <button class="btn-action btn-action-delete" onclick="deleteHistoryItem(${index})" title="Hapus">🗑️</button>
+                ` : `
+                    <span class="action-locked">🔒</span>
+                `}
+            </td>
         </tr>
     `;
     }).join('');
 }
 
+// ============================================
+// Delete History Item
+// ============================================
+function deleteHistoryItem(index) {
+    if (!confirm('Hapus data transaksi ini?')) return;
+    let history = getHistory();
+    if (history[index].sheetsSynced === true) {
+        showToast('Data yang sudah terkirim tidak bisa dihapus.', '⚠️');
+        return;
+    }
+    history.splice(index, 1);
+    localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(history));
+    renderHistory();
+    generateDailyRecap();
+    showToast('Data berhasil dihapus.', '🗑️');
+}
+
+// ============================================
+// Edit History Item — Modal
+// ============================================
+function openEditModal(index) {
+    const history = getHistory();
+    const item = history[index];
+
+    if (item.sheetsSynced === true) {
+        showToast('Data yang sudah terkirim tidak bisa diedit.', '⚠️');
+        return;
+    }
+
+    editingIndex = index;
+
+    document.getElementById('editName').value = item.name;
+    document.getElementById('editCis').value = item.cis || '';
+    document.getElementById('editPhone').value = item.phone;
+    document.getElementById('editTxType').value = item.txType;
+    document.getElementById('editTeller').value = item.teller;
+
+    editModal.classList.remove('hidden');
+}
+
+function closeEditModal() {
+    editModal.classList.add('hidden');
+    editingIndex = -1;
+}
+
+btnCloseEdit.addEventListener('click', closeEditModal);
+btnCancelEdit.addEventListener('click', closeEditModal);
+
+editModal.addEventListener('click', (e) => {
+    if (e.target === editModal) closeEditModal();
+});
+
+editForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    if (editingIndex < 0) return;
+
+    let history = getHistory();
+    const item = history[editingIndex];
+
+    item.name = document.getElementById('editName').value.trim();
+    item.cis = document.getElementById('editCis').value.trim();
+    item.phone = document.getElementById('editPhone').value.trim();
+    item.txType = document.getElementById('editTxType').value.trim();
+    item.teller = document.getElementById('editTeller').value.trim();
+
+    history[editingIndex] = item;
+    localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(history));
+
+    closeEditModal();
+    renderHistory();
+    generateDailyRecap();
+    showToast('Data berhasil diperbarui!', '✅');
+});
+
+// ============================================
+// Batch Save All Pending Data to Google Sheets
+// ============================================
+btnSaveAllToSheets.addEventListener('click', async () => {
+    const sheetsUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
+    if (!sheetsUrl) {
+        showToast('URL Google Sheets belum diatur. Klik ⚙️ untuk mengatur.', '⚠️');
+        settingsModal.classList.remove('hidden');
+        return;
+    }
+
+    let history = getHistory();
+    const pendingItems = history.filter(item => item.sheetsSynced === false || item.sheetsSynced === 'failed');
+
+    if (pendingItems.length === 0) {
+        showToast('Tidak ada data pending untuk disimpan.', 'ℹ️');
+        return;
+    }
+
+    if (!confirm(`Simpan ${pendingItems.length} data ke Google Sheets? Pastikan semua data sudah benar.`)) {
+        return;
+    }
+
+    // Disable button during save
+    btnSaveAllToSheets.disabled = true;
+    btnSaveAllToSheets.textContent = '⏳ Menyimpan...';
+
+    let successCount = 0;
+    let failCount = 0;
+
+    // Process in chronological order (oldest first = end of array first)
+    // History is stored newest-first, so reverse for chronological sending
+    const sortedPendingIndices = [];
+    for (let i = history.length - 1; i >= 0; i--) {
+        if (history[i].sheetsSynced === false || history[i].sheetsSynced === 'failed') {
+            sortedPendingIndices.push(i);
+        }
+    }
+
+    for (const idx of sortedPendingIndices) {
+        const item = history[idx];
+        const payload = {
+            tanggal: item.formattedDate,
+            nama: item.name,
+            salutation: item.salutation,
+            cis: item.cis,
+            jenisTransaksi: item.txType,
+            noTelp: item.phone,
+            teller: item.teller
+        };
+
+        try {
+            const dataParam = encodeURIComponent(JSON.stringify(payload));
+            const requestUrl = `${sheetsUrl}?data=${dataParam}`;
+            const response = await fetch(requestUrl);
+
+            if (!response.ok) throw new Error('Network error');
+
+            const result = await response.json();
+            if (result.result === 'success') {
+                history[idx].sheetsSynced = true;
+                successCount++;
+            } else {
+                throw new Error(result.error || 'Unknown error');
+            }
+        } catch (err) {
+            console.error('Google Sheets Error:', err);
+            history[idx].sheetsSynced = 'failed';
+            failCount++;
+        }
+    }
+
+    // Save updated history
+    localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(history));
+    renderHistory();
+    generateDailyRecap();
+
+    // Re-enable button
+    btnSaveAllToSheets.disabled = false;
+    btnSaveAllToSheets.textContent = '💾 Simpan Seluruh Data ke Sheet';
+
+    if (failCount === 0) {
+        showToast(`${successCount} data berhasil disimpan ke Google Sheets!`, '📊');
+    } else {
+        showToast(`${successCount} berhasil, ${failCount} gagal. Coba lagi untuk data yang gagal.`, '⚠️');
+    }
+});
+
+// ============================================
+// Clear History
+// ============================================
 btnClearHistory.addEventListener('click', () => {
     if (confirm('Apakah Anda yakin ingin membersihkan riwayat hari ini?')) {
         localStorage.removeItem(STORAGE_KEY_HISTORY);
         renderHistory();
+        generateDailyRecap();
         showToast('Riwayat berhasil dibersihkan', '🗑️');
     }
 });
 
 // ============================================
-// Google Sheets Sync — via GET Request
+// Google Sheets Settings
 // ============================================
 function loadSheetsUrl() {
     const savedUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
     if (savedUrl) {
         sheetsUrlInput.value = savedUrl;
     }
-}
-
-function saveToGoogleSheets(item, manualTrigger = false) {
-    const sheetsUrl = localStorage.getItem(STORAGE_KEY_SHEETS_URL);
-    if (!sheetsUrl) {
-        if (manualTrigger) {
-            showToast('URL Google Sheets belum diatur. Klik ⚙️ untuk mengatur.', '⚠️');
-            settingsModal.classList.remove('hidden');
-        }
-        return;
-    }
-
-    const payload = {
-        tanggal: item.formattedDate,
-        nama: item.name,
-        salutation: item.salutation,
-        cis: item.cis,
-        jenisTransaksi: item.txType,
-        noTelp: item.phone,
-        teller: item.teller
-    };
-
-    // Send via GET request with data as query parameter
-    const dataParam = encodeURIComponent(JSON.stringify(payload));
-    const requestUrl = `${sheetsUrl}?data=${dataParam}`;
-
-    fetch(requestUrl)
-        .then(response => {
-            if (!response.ok) throw new Error('Network error');
-            return response.json();
-        })
-        .then(result => {
-            if (result.result === 'success') {
-                item.sheetsSynced = true;
-                saveToHistory(item);
-                showToast('Data berhasil dikirim ke Google Sheets!', '📊');
-            } else {
-                throw new Error(result.error || 'Unknown error');
-            }
-        })
-        .catch(err => {
-            console.error('Google Sheets Error:', err);
-            item.sheetsSynced = 'failed';
-            saveToHistory(item);
-            if (manualTrigger) {
-                showToast('Gagal mengirim ke Google Sheets. Periksa URL.', '❌');
-            }
-        });
 }
 
 // ============================================
@@ -441,6 +623,59 @@ btnSaveSettings.addEventListener('click', () => {
         showToast('URL Google Sheets dihapus.', '🗑️');
     }
     settingsModal.classList.add('hidden');
+});
+
+// ============================================
+// Daily Recap — Generate Formatted Text
+// ============================================
+function generateDailyRecap() {
+    const history = getHistory();
+
+    if (history.length === 0) {
+        recapText.textContent = 'Belum ada data transaksi untuk direkap.';
+        return;
+    }
+
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2, '0');
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const todayFormatted = `${dd}-${mm}-${yyyy}`;
+
+    let recap = `BSQ Teller ${todayFormatted}\n\n`;
+
+    // Build recap in chronological order (oldest first)
+    const chronological = [...history].reverse();
+    chronological.forEach((item, idx) => {
+        recap += `${idx + 1}. ${item.name} - ${item.txType} ${item.phone}\n`;
+    });
+
+    recap += `\nauto generated by Lim`;
+
+    recapText.textContent = recap;
+}
+
+// ============================================
+// Copy Daily Recap to Clipboard
+// ============================================
+btnCopyRecap.addEventListener('click', () => {
+    const text = recapText.textContent;
+    if (!text || text === 'Belum ada data transaksi untuk direkap.') {
+        showToast('Belum ada data untuk disalin.', '⚠️');
+        return;
+    }
+
+    navigator.clipboard.writeText(text)
+        .then(() => showToast('Rekapan berhasil disalin ke clipboard!', '📋'))
+        .catch(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('Rekapan berhasil disalin!', '📋');
+        });
 });
 
 // ============================================

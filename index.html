@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BSQ Prasurvey - BCA KCP Jembatan Dua</title>
     <meta name="description" content="Aplikasi Prasurvey Branch Service Quality (BSQ) BCA KCP Jembatan Dua. Input data nasabah, kirim WhatsApp otomatis, dan sinkronisasi ke Google Sheets.">
-    <link rel="stylesheet" href="styles.css?v=3">
+    <link rel="stylesheet" href="styles.css?v=4">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#003a6c">
     <link rel="apple-touch-icon" href="logoBCAPutih.png">
@@ -68,10 +68,10 @@
                         <input type="text" id="customerName" placeholder="Contoh: Budi Santoso" required autocomplete="off">
                     </div>
 
-                    <!-- CIS -->
+                    <!-- CIS (Numeric Only) -->
                     <div class="form-group">
                         <label for="cisNumber">Nomor CIS</label>
-                        <input type="text" id="cisNumber" placeholder="Contoh: 1234567890" autocomplete="off">
+                        <input type="number" id="cisNumber" placeholder="Contoh: 1234567890" autocomplete="off" inputmode="numeric">
                     </div>
 
                     <!-- No Telp / WhatsApp -->
@@ -146,9 +146,6 @@
                         <button class="btn btn-outline" id="btnCopy" disabled>
                             📋 Salin Pesan
                         </button>
-                        <button class="btn btn-sheets" id="btnSaveSheets" disabled>
-                            📊 Simpan ke Sheets
-                        </button>
                     </div>
                 </div>
             </section>
@@ -171,6 +168,42 @@
             </div>
         </div>
 
+        <!-- Edit History Item Modal -->
+        <div class="modal-overlay hidden" id="editModal">
+            <div class="modal-content modal-edit">
+                <div class="modal-header">
+                    <h3>✏️ Edit Data Transaksi</h3>
+                    <button class="modal-close" id="btnCloseEdit">&times;</button>
+                </div>
+                <form id="editForm">
+                    <div class="form-group">
+                        <label for="editName">Nama Nasabah</label>
+                        <input type="text" id="editName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editCis">Nomor CIS</label>
+                        <input type="number" id="editCis" inputmode="numeric">
+                    </div>
+                    <div class="form-group">
+                        <label for="editPhone">No. HP / WhatsApp</label>
+                        <input type="tel" id="editPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTxType">Jenis Transaksi</label>
+                        <input type="text" id="editTxType" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTeller">Nama Teller</label>
+                        <input type="text" id="editTeller" required>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" id="btnCancelEdit">Batal</button>
+                        <button type="submit" class="btn btn-primary">💾 Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Float Config Button -->
         <button class="float-config-btn" id="btnOpenSettings" title="Pengaturan Google Sheets">
             ⚙️
@@ -179,7 +212,10 @@
         <!-- Log / History Section -->
         <section class="card history-card">
             <div class="history-header">
-                <h3>📋 Riwayat Input Hari Ini</h3>
+                <div>
+                    <h3>📋 Riwayat Input Hari Ini</h3>
+                    <p class="card-desc history-desc">Data bersifat sementara. Klik "Simpan Seluruh Data ke Sheet" setelah data dipastikan benar.</p>
+                </div>
                 <button class="btn btn-sm btn-outline" id="btnClearHistory">🗑️ Bersihkan</button>
             </div>
             <div class="table-responsive">
@@ -194,14 +230,34 @@
                             <th>No Telp</th>
                             <th>Teller</th>
                             <th>Status</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="historyTableBody">
                         <tr>
-                            <td colspan="8" class="text-center text-muted">Belum ada data transaksi hari ini</td>
+                            <td colspan="9" class="text-center text-muted">Belum ada data transaksi hari ini</td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <div class="history-actions" id="historyActions" style="display: none;">
+                <button class="btn btn-sheets btn-save-all" id="btnSaveAllToSheets">
+                    💾 Simpan Seluruh Data ke Sheet
+                </button>
+            </div>
+        </section>
+
+        <!-- Rekapan Harian Section -->
+        <section class="card recap-card" id="recapSection">
+            <div class="recap-header">
+                <div>
+                    <h3>📊 Rekapan Harian</h3>
+                    <p class="card-desc">Ringkasan transaksi hari ini — siap copy untuk laporan atasan</p>
+                </div>
+                <button class="btn btn-sm btn-primary" id="btnCopyRecap">📋 Salin Rekapan</button>
+            </div>
+            <div class="recap-content">
+                <pre id="recapText" class="recap-text">Belum ada data transaksi untuk direkap.</pre>
             </div>
         </section>
 
@@ -212,7 +268,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

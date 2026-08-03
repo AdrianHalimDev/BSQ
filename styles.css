@@ -1,5 +1,5 @@
 /* ============================================
-   BSQ Prasurvey PWA — Premium Design System
+   BSQ Prasurvey PWA — Premium Design System v3
    BCA KCP Jembatan Dua
    ============================================ */
 
@@ -240,6 +240,7 @@ body {
 input[type="text"],
 input[type="tel"],
 input[type="date"],
+input[type="number"],
 select {
     width: 100%;
     padding: 12px 14px;
@@ -256,6 +257,7 @@ select {
 input[type="text"]:focus,
 input[type="tel"]:focus,
 input[type="date"]:focus,
+input[type="number"]:focus,
 select:focus {
     border-color: var(--border-focus);
     box-shadow: 0 0 0 3px var(--bca-glow);
@@ -263,6 +265,18 @@ select:focus {
 
 input::placeholder {
     color: var(--text-muted);
+}
+
+/* Hide number input spinner */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 /* Toggle Radio Group (Bapak / Ibu) */
@@ -507,14 +521,21 @@ input::placeholder {
 .history-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 16px;
+    gap: 12px;
 }
 
 .history-header h3 {
     font-size: 1.05rem;
     font-weight: 700;
     color: var(--text-primary);
+}
+
+.history-desc {
+    margin-top: 4px;
+    color: var(--bca-orange);
+    font-weight: 500;
 }
 
 .table-responsive {
@@ -550,6 +571,14 @@ input::placeholder {
 
 .history-table tbody tr:hover {
     background-color: #f8fafc;
+}
+
+.history-table tbody tr.row-synced {
+    background-color: #f0fdf4;
+}
+
+.history-table tbody tr.row-synced:hover {
+    background-color: #dcfce7;
 }
 
 .text-center {
@@ -590,6 +619,129 @@ input::placeholder {
     font-weight: 600;
 }
 
+/* Action buttons in table */
+.action-cell {
+    white-space: nowrap;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.btn-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border-color);
+    background: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: all var(--transition-fast);
+    padding: 0;
+}
+
+.btn-action-edit:hover {
+    background-color: #eff6ff;
+    border-color: var(--bca-accent);
+    transform: scale(1.1);
+}
+
+.btn-action-delete:hover {
+    background-color: #fef2f2;
+    border-color: #f87171;
+    transform: scale(1.1);
+}
+
+.action-locked {
+    font-size: 0.85rem;
+    opacity: 0.5;
+}
+
+/* History Actions — Batch Save Button */
+.history-actions {
+    display: flex;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-save-all {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 14px rgba(15,157,88,0.25);
+    animation: saveAllPulse 3s ease-in-out infinite;
+}
+
+@keyframes saveAllPulse {
+    0%, 100% { box-shadow: 0 4px 14px rgba(15,157,88,0.25); }
+    50% { box-shadow: 0 4px 24px rgba(15,157,88,0.45); }
+}
+
+.btn-save-all:hover:not(:disabled) {
+    box-shadow: 0 6px 24px rgba(15,157,88,0.5);
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   Recap Section — Daily Summary
+   ============================================ */
+.recap-card {
+    margin-top: 4px;
+}
+
+.recap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    gap: 12px;
+}
+
+.recap-header h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.recap-content {
+    background: linear-gradient(135deg, #f8fafc, #eef2ff);
+    border: 1.5px solid #e0e7ff;
+    border-radius: var(--radius-sm);
+    padding: 18px 20px;
+    position: relative;
+}
+
+.recap-text {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: inherit;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* ============================================
+   Edit Modal — Extended
+   ============================================ */
+.modal-edit .form-group {
+    margin-bottom: 14px;
+}
+
+.modal-edit .form-group label {
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+}
+
+.modal-edit .form-group input {
+    padding: 10px 12px;
+}
+
 /* ============================================
    Modal — Glassmorphism Style
    ============================================ */
@@ -622,6 +774,8 @@ input::placeholder {
     max-width: 480px;
     box-shadow: var(--shadow-lg);
     animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 @keyframes slideUp {
@@ -769,5 +923,13 @@ input::placeholder {
         width: 90%;
         text-align: center;
         justify-content: center;
+    }
+
+    .history-header {
+        flex-direction: column;
+    }
+
+    .recap-header {
+        flex-direction: column;
     }
 }
